@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { createRoot } from "react-dom/client"
 import selectors from "@/constants/selectors";
 import NewChatWindow from "@/components/newChatWindow";
+import "@/global.css"
 
 const ContainerInjector = () => {
     const [container, setContainer] = useState<HTMLElement | null>(null);
