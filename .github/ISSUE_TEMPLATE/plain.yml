@@ -1,5 +1,14 @@
-## What is this issue? 🛠
+name: Progress Update
+about: Track progress on the issue
+title: "[Progress] "
+labels: [progress]
 
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## What is this issue? 🛠
 
-## Progress 🏃‍♀️
-- []
+        ## Progress 🏃‍♀️
+        - [ ] Task 1
+        - [ ] Task 2
