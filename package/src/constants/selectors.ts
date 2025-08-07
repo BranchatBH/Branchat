@@ -1,5 +1,5 @@
 export default {
 
-    chatGPT : 'main#main.transition-width',
+    chatGPT : 'div#history', 
 
 }

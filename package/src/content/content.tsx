@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { createRoot } from "react-dom/client"
 import selectors from "@/constants/selectors";
-import NewChatWindow from "@/components/newChatWindow";
+import NewChatButton from "@/components/newChatButton";
 import "@/global.css"
 
 const ContainerInjector = () => {
@@ -39,12 +39,10 @@ const ContainerInjector = () => {
         const run = async () => {
             try{
                 const res = await waitForContainer();
-                if (isMounted) {
-                    const style = window.getComputedStyle(res);
-                    if(style.position === 'static'){
-                        style.position = 'relative';
-                    }
-                    setContainer(res);
+                if (isMounted && res.parentNode) {
+                    const placeHolder = document.createElement('div');
+                    res.parentNode.insertBefore(placeHolder, res);
+                    setContainer(placeHolder);
                 }
 
             }catch(err){
@@ -62,7 +60,7 @@ const ContainerInjector = () => {
     if(!container){return null;}
 
     return(
-        createPortal(<NewChatWindow/>, container)
+        createPortal(<NewChatButton/>, container)
     );
 };
 
