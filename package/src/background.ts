@@ -4,7 +4,7 @@ chrome.sidePanel.setPanelBehavior({openPanelOnActionClick : true})
 chrome.runtime.onMessage.addListener((message,sender,sendResponse) => {
     if(message.type === "ADD_BRANCH"){
         console.log("got message");
-        chrome.tabs.update(sender.tab?.id, { url: 'https://gemini.google.com/app' });
+        chrome.tabs.update(sender.tab?.id, { url: 'https://chatgpt.com/' });
         sendResponse({success : true});
     } 
     }
