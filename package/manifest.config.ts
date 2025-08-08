@@ -11,18 +11,10 @@ export default defineManifest({
   host_permissions: [
     "https://chatgpt.com/*"
   ],
-  declarative_net_request: {
-    rule_resources: [{
-      id : "ruleset",
-      enabled : true,
-      path : "src/utils/rules.json"
-    }]
-  },
   action: {
     default_icon: {
       48: 'public/logo.png',
-    },
-    default_popup: 'src/popup/index.html',
+    }
   },
   content_scripts: [{
     js: ['src/content/content.tsx'],
@@ -32,7 +24,7 @@ export default defineManifest({
     service_worker: "src/background.ts"
  },
   side_panel:{
-    default_path:"src/sidepanel/main.html?url=https://chatgpt.com"
+    default_path:"src/sidepanel/main.html"
   },
 
   permissions:[

@@ -1,5 +1,5 @@
 export default {
-
-    chatGPT : 'div#history', 
-
+    chatGPT : {
+        button : 'div.flex.flex-wrap.items-center.gap-y-4.select-none'
+}
 }

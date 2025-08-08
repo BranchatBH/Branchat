@@ -6,23 +6,23 @@ import NewChatButton from "@/components/newChatButton";
 import "@/global.css"
 
 const ContainerInjector = () => {
-    const [container, setContainer] = useState<HTMLElement | null>(null);
+    const [container, setContainer] = useState<(HTMLElement)[]>([]);
 
     useEffect(() => {
         let isMounted = true;
 
-        const waitForContainer = () : Promise<HTMLElement> => {
+        const waitForContainer = () : Promise<HTMLElement[]> => {
             return new Promise((resolve, reject) => {
                 const startTime = Date.now();
                 const timeOut = 10000;
 
                 const check = () => {
-                    const query = selectors.chatGPT;
-                    const el = document.querySelector(query) as HTMLElement | null;
+                    const {chatGPT} = selectors;
+                    const el =  document.querySelectorAll(chatGPT.button) as NodeListOf<HTMLElement> | null;
 
-                    if(el){
-                        console.log("found element");
-                        resolve(el);
+                    if(el && el.length > 0){
+                        console.log("found elements:", el.length);
+                        resolve([...el]);
 
                     }else if(Date.now() - startTime > timeOut){
                         reject(new Error("timeout"));
@@ -39,12 +39,19 @@ const ContainerInjector = () => {
         const run = async () => {
             try{
                 const res = await waitForContainer();
-                if (isMounted && res.parentNode) {
-                    const placeHolder = document.createElement('div');
-                    res.parentNode.insertBefore(placeHolder, res);
-                    setContainer(placeHolder);
-                }
-
+                const containers = res.flatMap((e:HTMLElement) => {
+                    if (isMounted && e.hasChildNodes()) {
+                    
+                        const ph = document.createElement('div');
+                        e.appendChild(ph);
+                        console.log("appended")
+                    return ph;
+                    }
+                    else{
+                        return [];
+                    }
+                })
+                setContainer(containers);
             }catch(err){
                 console.log(err);
             }
@@ -57,10 +64,15 @@ const ContainerInjector = () => {
         }
     },[]);
 
-    if(!container){return null;}
+    if(container.length === 0){return null;}
 
     return(
-        createPortal(<NewChatButton/>, container)
+        <>
+        {container.map((c:HTMLElement, idx:number) => {
+            console.log("injected react")
+            return(createPortal(<NewChatButton id={idx}/>, c));
+        })}
+        </>
     );
 };
 
@@ -70,6 +82,7 @@ document.body.appendChild(mount);
 
 // Mount the React app
 const root = createRoot(mount);
+console.log("injecting");
 root.render(<ContainerInjector />);
 
 export default ContainerInjector;
