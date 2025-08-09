@@ -4,7 +4,7 @@ import "../global.css";
 import { Pencil } from "lucide-react";
 import selectors from "@/constants/selectors";
 import { dummyContext } from "@/constants/dummy";
-
+import { getEditorEl, prependToProseMirror, findSendButton} from "@/utils/helper";
 interface Elements {
   elList: HTMLElement[];
   formEl: HTMLFormElement;
@@ -92,63 +92,6 @@ const ContextInjector = () => {
     </>
   );
 };
-
-function getEditorEl(): HTMLDivElement | null {
-  return (
-    (document.querySelector(
-      "#prompt-textarea.ProseMirror[contenteditable='true']"
-    ) as HTMLDivElement) ||
-    (document.querySelector(".ProseMirror[contenteditable='true']") as HTMLDivElement)
-  );
-}
-
-function prependToProseMirror(text: string) {
-  const editor = getEditorEl();
-  if (!editor || !text) return;
-
-  const now = editor.textContent ?? "";
-  if (now.startsWith(text)) return;
-
-  editor.focus();
-
-  // Move caret to the start
-  const sel = window.getSelection();
-  const range = document.createRange();
-  range.selectNodeContents(editor);
-  range.collapse(true);
-  sel?.removeAllRanges();
-  sel?.addRange(range);
-
-  // Try beforeinput first
-  const evt = new InputEvent("beforeinput", {
-    inputType: "insertText",
-    data: text + "\n",
-    bubbles: true,
-    cancelable: true,
-  });
-  const accepted = editor.dispatchEvent(evt);
-
-  // Fallback for environments ignoring beforeinput
-  if (!accepted || !(editor.textContent ?? "").startsWith(text)) {
-    // still works fine for contenteditable
-    document.execCommand("insertText", false, text + "\n");
-  }
-}
-
-function findSendButton(root: Document | HTMLElement = document): HTMLButtonElement | null {
-  const candidates = [
-    "[data-testid='send-button']",
-    "[data-testid='composer-trailing-actions'] button",
-    "button[aria-label*='Send']",
-    "button[aria-label*='전송']",
-    ".composer-btn",
-  ];
-  for (const sel of candidates) {
-    const btn = root.querySelector(sel) as HTMLButtonElement | null;
-    if (btn) return btn;
-  }
-  return null;
-}
 
 const ContextSummary = ({ form }: { form: HTMLFormElement }) => {
   const [context, setContext] = useState<string>(dummyContext);
