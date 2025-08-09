@@ -8,21 +8,34 @@ export default defineManifest({
   icons: {
     48: 'public/logo.png',
   },
+  host_permissions: [
+    "https://chatgpt.com/*"
+  ],
   action: {
     default_icon: {
       48: 'public/logo.png',
-    },
-    default_popup: 'src/popup/index.html',
+    }
   },
   content_scripts: [{
-    js: ['src/content/newchat.tsx'],
+    js: ['src/content/content.tsx'],
     matches: ['<all_urls>'],
   }],
   background: {
     service_worker: "src/background.ts"
  },
+  side_panel:{
+    default_path:"src/sidepanel/main.html"
+  },
+
   permissions:[
     "system.display",
-    "tabs"
-  ]
+    "tabs",
+    "sidePanel",
+    "declarativeNetRequest", "declarativeNetRequestWithHostAccess", "webRequest", "windows",
+    "activeTab", "scripting"
+  ],
+  web_accessible_resources: [{
+    resources: ["src/sidepanel/main.html"],
+    matches: ["*://*/*"]
+  }]
 })
