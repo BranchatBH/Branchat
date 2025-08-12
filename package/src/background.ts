@@ -81,7 +81,7 @@ async function waitForContentReady(tabId: number, timeoutMs = 10000) {
 
     if (res?.ready) {
         console.log(`connected in ${Date.now()-start} ms`);
-        return
+        return;
     };           // ✅ content script is alive
     await new Promise(r => setTimeout(r, 200)); // retry shortly
   }

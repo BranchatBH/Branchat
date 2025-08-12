@@ -26,6 +26,23 @@ export function findSendButton(root: Document | HTMLElement = document): HTMLBut
     return null;
 }
 
+export function findByTags<T extends HTMLElement>(root : Document | HTMLElement = document, tags : string[]) : T | null {
+    for (const tag of tags){
+        const elem = root.querySelector(tag) as T | null;
+        if(elem) return elem;
+    }
+
+    return null;
+}
+
+export function findAllByTag<T extends HTMLElement>(root : Document | HTMLElement = document, tag : string) : NodeListOf<T> | null {
+    const el = document.querySelectorAll(tag);
+    if(el.length !== 0){
+        return el as NodeListOf<T>;
+    }
+    return null;
+}
+
 export default {
     getEditorEl,
     findSendButton,

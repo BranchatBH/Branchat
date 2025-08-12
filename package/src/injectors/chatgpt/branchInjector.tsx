@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import selectors from "@/constants/selectors";
 import NewChatButton from "@/components/newChatButton";
 import "@/global.css"
+import { DomProvider } from "@/providers/DomProvider";
 
-const BranchInjector = () => {
+const BranchInjector = ({dom} : {dom : DomProvider}) => {
     const [container, setContainer] = useState<(HTMLElement)[]>([]);
 
     useEffect(() => {
@@ -16,8 +16,7 @@ const BranchInjector = () => {
                 const timeOut = 10000;
 
                 const check = () => {
-                    const {chatGPT} = selectors;
-                    const el =  document.querySelectorAll(chatGPT.buttonQuery) as NodeListOf<HTMLElement> | null;
+                    const el =  dom.branchButtons() as NodeListOf<HTMLElement> | null;
 
                     if(el && el.length > 0){
                         console.log("found elements:", el.length);
@@ -44,6 +43,7 @@ const BranchInjector = () => {
                         const ph = document.createElement('div');
                         e.appendChild(ph);
                         console.log("appended")
+
                     return ph;
                     }
                     else{

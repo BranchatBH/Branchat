@@ -1,9 +1,48 @@
-export default {
-    chatGPT : {
-        buttonQuery : 'div.flex.flex-wrap.items-center.gap-y-4.select-none',
-        inputQuery : 'div.bg-token-bg-primary.shadow-short.flex.w-full.cursor-text.overflow-clip',
-        formQuery : 'form[data-type="unified-composer"].w-full',
-        inputSectionQuery : 'button[name="context-connector-pasted-link-popover-trigger"]',
-        textQuery : 'textarea[name="prompt-textarea"]'
-}
-};
+import type { Provider, SelectorSet } from "@/types/types";
+
+export const SELECTORS = {
+
+    chatgpt : {
+
+        branchButtonQ : ['div.flex.flex-wrap.items-center.gap-y-4.select-none'],
+
+        formQ : ['form[data-type="unified-composer"]'],
+
+        editorQ : ['#prompt-textarea.ProseMirror[contenteditable="true"]', ".ProseMirror[contenteditable='true']"],
+
+        submitButtonQ : 
+        [
+            "[data-testid='send-button']",
+            "[data-testid='composer-trailing-actions'] button#composer-submit-button",
+            "button[aria-label*='Send']",
+            "button[aria-label*='전송']",
+            ".composer-submit-btn"
+        ]
+
+    },
+
+    gemini: {
+
+        branchButtonQ: ["..."],
+
+        formQ: ["..."],
+
+        editorQ: ["..."],
+
+        submitButtonQ: ["..."],
+
+    },
+
+    claude: {
+
+        branchButtonQ: ["..."],
+
+        formQ: ["..."],
+
+        editorQ: ["..."],
+
+        submitButtonQ: ["..."],
+
+    },
+
+} as const satisfies Record<Provider, SelectorSet>;
