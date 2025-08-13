@@ -1,4 +1,6 @@
-let currentTabId: number | null = null;
+type TabId = number;
+const CONTENT_FILE = "src/content/content.tsx.js"; // built file path
+let currentTabId: TabId | null = null;
 
 // Track tab activation
 chrome.tabs.onActivated.addListener(({ tabId }) => {
@@ -9,51 +11,56 @@ chrome.windows.onFocusChanged.addListener(async () => {
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
   currentTabId = tab?.id ?? null;
 });
+// Debounce per-tab navigation to avoid duplicate injections on rapid SPA changes
+const debounceTimers = new Map<TabId, number>();
+function debounce(tabId: number, fn: () => void, delay = 200) {
+  const old = debounceTimers.get(tabId);
+  if (old) clearTimeout(old);
+  const t = setTimeout(fn, delay) as unknown as number;
+  debounceTimers.set(tabId, t);
+}
 
-chrome.sidePanel.setPanelBehavior({openPanelOnActionClick : true})
-    .catch((error) => console.log(error));
+// Reusable helpers
+const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-chrome.runtime.onMessage.addListener(async (message,sender,sendResponse) => {
-  
-    if(message.type === "ADD_BRANCH"){
-        console.log("got message");
-        chrome.tabs.update(currentTabId ?? 0,{ url: "https://chatgpt.com" });
-        return;
-    }
-    
-    else if(message.type === "NAVIGATE"){
-        if(!currentTabId){
-            sendResponse({success : false});
-            return;
-        }
-        const tabId = currentTabId
-        console.log("got navigate message");
-        await chrome.tabs.update(tabId, {url : message.url});
-        await waitForComplete(tabId);
-        await waitForContentReady(tabId);
-        console.log(tabId);
-        try{
-            console.log("message prompt:", message.prompt);
-            chrome.tabs.sendMessage(tabId, {
-                type: "RUN_FILL_AND_SUBMIT",
-                prompt: message.prompt ?? ""
-            }, (res:any) => {sendResponse(res ?? { success: false }); return;});
-            
-            }catch(error){
-                console.log(error);
-                sendResponse({success : false});
-                return;
-        }
-      }
-    }
-);
+async function pingContent(tabId: number, timeoutMs = 3000): Promise<boolean> {
+  return new Promise((resolve) => {
+    const t = setTimeout(() => resolve(false), timeoutMs);
+    chrome.tabs.sendMessage(tabId, { type: "PING" }, (reply) => {
+      clearTimeout(t);
+      if (chrome.runtime.lastError) return resolve(false);
+      resolve(Boolean(reply?.ready));
+    });
+  });
+}
 
+async function ensureContentScript(tabId: number) {
+  // already there?
+  if (await pingContent(tabId)) return;
+
+  // inject built JS
+  await chrome.scripting.executeScript({
+    target: { tabId },
+    files: [CONTENT_FILE],
+  });
+
+  // give it a moment to boot
+  for (let i = 0; i < 6; i++) {
+    if (await pingContent(tabId)) return;
+    await delay(200);
+  }
+  console.log("timeout")
+  throw new Error("Content script not ready after injection");
+}
+
+// Optional: wait for 'complete' status (useful on hard loads; SPA often already 'complete')
 async function waitForComplete(tabId: number) {
-  const tab = await chrome.tabs.get(tabId);
-  if (tab.status === "complete") return;
-
+  try {
+    const t = await chrome.tabs.get(tabId);
+    if (t.status === "complete") return;
+  } catch { return; }
   await new Promise<void>((resolve) => {
-    const listener = (id: number, info: chrome.tabs.OnUpdatedInfo) => {
+    const listener = (id: number, info: chrome.tabs.OnUpdatedInfo, tab: chrome.tabs.Tab) => {
       if (id === tabId && info.status === "complete") {
         chrome.tabs.onUpdated.removeListener(listener);
         resolve();
@@ -63,27 +70,64 @@ async function waitForComplete(tabId: number) {
   });
 }
 
-
-async function waitForContentReady(tabId: number, timeoutMs = 10000) {
-  const start = Date.now();
-
-  while (Date.now() - start < timeoutMs) {
-    const res = await new Promise<{ ready?: boolean } | undefined>((resolve) => {
-      chrome.tabs.sendMessage(tabId, { type: "PING" }, (reply) => {
-        // If content isn't there yet, you'll get lastError: "Receiving end does not exist"
-        if (chrome.runtime.lastError) {
-            console.log("ping failed");
-            return resolve(undefined);
-        }
-        resolve(reply);
-      });
-    });
-
-    if (res?.ready) {
-        console.log(`connected in ${Date.now()-start} ms`);
-        return;
-    };           // ✅ content script is alive
-    await new Promise(r => setTimeout(r, 200)); // retry shortly
+// ---- NAV LISTENERS ----
+// 1) SPA route changes (most important)
+chrome.webNavigation.onHistoryStateUpdated.addListener(({ tabId, url }) => {
+  // Filter to your domains
+  if (!/https?:\/\/(www\.)?chatgpt\.com/.test(url)) {
+    console.log("wrongurl");
+    return;
   }
-  throw new Error("Content script not ready (timeout)");
-}
+
+  debounce(tabId, async () => {
+    try {
+      await ensureContentScript(tabId);
+      // Optionally, nudge the CS to (re)mount after nav
+      chrome.tabs.sendMessage(tabId, { type: "POST_NAVIGATE" });
+    } catch (e) {
+      // ignore/trace
+      // console.log("ensureContentScript failed", e);
+    }
+  }, 150);
+}, { url: [{ hostSuffix: "chatgpt.com" }] });
+
+// 2) Normal navigations (initial hard loads, redirects, etc.)
+chrome.webNavigation.onCommitted.addListener(async ({ tabId, url, frameId }) => {
+  if (frameId !== 0) return; // top frame only
+  if (!/https?:\/\/(www\.)?chatgpt\.com/.test(url)) return;
+
+  debounce(tabId, async () => {
+    try {
+      await waitForComplete(tabId);
+      await ensureContentScript(tabId);
+      chrome.tabs.sendMessage(tabId, { type: "POST_NAVIGATE" });
+    } catch {}
+  }, 150);
+}, { url: [{ hostSuffix: "chatgpt.com" }] });
+
+// Example: public API your UI can call
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg?.type === "NAVIGATE") {
+    console.log("got message");
+    (async () => {
+      const tabId = currentTabId;
+      console.log(tabId);
+      if (!tabId) return sendResponse({ success: false });
+
+      try {
+        await chrome.tabs.update(tabId, { url: msg.url });
+        console.log(tabId);
+        await waitForComplete(tabId);
+        await ensureContentScript(tabId);
+        chrome.tabs.sendMessage(tabId, { type: "RUN_FILL_AND_SUBMIT", prompt: msg.prompt ?? "" }, (res:any) => {
+          if (chrome.runtime.lastError) return sendResponse({ success: false });
+          sendResponse(res ?? { success: false });
+        });
+      } catch (e) {
+        console.log(e);
+        sendResponse({ success: false, error: String(e) });
+      }
+    })();
+    return true; // keep channel open
+  }
+});

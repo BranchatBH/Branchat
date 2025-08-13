@@ -1,78 +1,69 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import NewChatButton from "@/components/newChatButton";
-import "@/global.css"
 import { DomProvider } from "@/providers/DomProvider";
 
-const BranchInjector = ({dom} : {dom : DomProvider}) => {
-    const [container, setContainer] = useState<(HTMLElement)[]>([]);
+type Props = { dom: DomProvider };
 
-    useEffect(() => {
-        let isMounted = true;
+export default function BranchInjector({ dom }: Props) {
+  const [targets, setTargets] = useState<HTMLElement[]>([]);
 
-        const waitForContainer = () : Promise<HTMLElement[]> => {
-            return new Promise((resolve, reject) => {
-                const startTime = Date.now();
-                const timeOut = 10000;
+  const inject = () => {
+    const bars = Array.from(dom.branchButtons() ?? []);
+    const newHosts: HTMLElement[] = [];
 
-                const check = () => {
-                    const el =  dom.branchButtons() as NodeListOf<HTMLElement> | null;
+    bars.forEach((bar) => {
+      // Prevent multiple injections in the same footer bar
+      if (bar.dataset.branchatInjected === "true") return;
 
-                    if(el && el.length > 0){
-                        console.log("found elements:", el.length);
-                        resolve([...el]);
+      const grow = bar.querySelector<HTMLElement>(".grow");
 
-                    }else if(Date.now() - startTime > timeOut){
-                        reject(new Error("timeout"));
+      const host = document.createElement("span");
+      host.style.display = "inline-block";
+      host.style.marginLeft = "6px";
+      host.style.verticalAlign = "middle";
 
-                    }else{
-                        setTimeout(check, 500);
-                    }
-                };
+      if (grow && grow.parentElement === bar) {
+        bar.insertBefore(host, grow);
+      } else {
+        bar.appendChild(host);
+      }
 
-                check();
-            });
-        }
-        
-        const run = async () => {
-            try{
-                const res = await waitForContainer();
-                const containers = res.flatMap((e:HTMLElement) => {
-                    if (isMounted && e.hasChildNodes()) {
-                    
-                        const ph = document.createElement('div');
-                        e.appendChild(ph);
-                        console.log("appended")
+      bar.dataset.branchatInjected = "true"; // mark this bar as done
+      newHosts.push(host);
+    });
 
-                    return ph;
-                    }
-                    else{
-                        return [];
-                    }
-                })
-                setContainer(containers);
-            }catch(err){
-                console.log(err);
-            }
-        }
+    if (newHosts.length > 0) {
+      setTargets((prev) => [...prev, ...newHosts]);
+    }
+  };
 
-        run();
+  const watchStreamSettle = (root: HTMLElement) => {
+    let timer: number | null = null;
+    const mo = new MutationObserver(() => {
+      if (timer) clearTimeout(timer);
+      timer = window.setTimeout(() => inject(), 1200);
+    });
+    mo.observe(root, { childList: true, subtree: true, characterData: true });
+    return () => {
+      mo.disconnect();
+      if (timer) clearTimeout(timer);
+    };
+  };
 
-        return () => {
-            isMounted = false;
-        }
-    },[]);
+  useEffect(() => {
+    inject(); // initial
+    const cleanup = watchStreamSettle(document.body);
+    return cleanup;
+  }, []);
 
-    if(container.length === 0){return null;}
+  if (targets.length === 0) return null;
 
-    return(
-        <>
-        {container.map((c:HTMLElement, idx:number) => {
-            console.log("injected react")
-            return(createPortal(<NewChatButton id={idx}/>, c));
-        })}
-        </>
-    );
-};
-
-export default BranchInjector;
+  return (
+    <>
+      {targets.map((t, idx) =>
+        createPortal(<NewChatButton id={idx} />, t, `branchat-${idx}`)
+      )}
+    </>
+  );
+}
