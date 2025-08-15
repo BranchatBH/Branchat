@@ -11,7 +11,10 @@ chrome.windows.onFocusChanged.addListener(async () => {
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
   currentTabId = tab?.id ?? null;
 });
-// Debounce per-tab navigation to avoid duplicate injections on rapid SPA changes
+
+chrome.sidePanel.setPanelBehavior({openPanelOnActionClick : true})
+    .catch((error) => console.log(error));
+
 const debounceTimers = new Map<TabId, number>();
 function debounce(tabId: number, fn: () => void, delay = 200) {
   const old = debounceTimers.get(tabId);

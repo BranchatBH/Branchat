@@ -1,5 +1,7 @@
 import { GitBranchPlus } from "lucide-react";
+
 const NewChatButton = ({id}:{id:number}) => {
+
   const handleClick = async () => {
     await chrome.runtime.sendMessage({type:"ADD_BRANCH"}, console.log);
     console.log("message sent");

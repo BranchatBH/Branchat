@@ -17,7 +17,9 @@ export const SELECTORS = {
             "button[aria-label*='Send']",
             "button[aria-label*='전송']",
             ".composer-submit-btn"
-        ]
+        ],
+
+        askBubbleQ: ['div.aria-live\\=polite.absolute.select-none > button']
 
     },
 
@@ -31,6 +33,8 @@ export const SELECTORS = {
 
         submitButtonQ: ["..."],
 
+        askBubbleQ : ["..."]
+
     },
 
     claude: {
@@ -42,6 +46,8 @@ export const SELECTORS = {
         editorQ: ["..."],
 
         submitButtonQ: ["..."],
+
+        askBubbleQ : ["..."]
 
     },
 
