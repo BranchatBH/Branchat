@@ -110,6 +110,19 @@ chrome.webNavigation.onCommitted.addListener(async ({ tabId, url, frameId }) => 
 
 // Example: public API your UI can call
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg?.type === 'SELECTION') {
+    const tabId = currentTabId
+    console.log("heard from background");
+    if (!tabId) return; 
+    chrome.runtime.sendMessage({
+      type: 'SELECTION_RELAY',
+      text: msg.text,
+      tabId,
+    });
+    sendResponse({ ok: true });
+  // Keep channel open only if using async; here we don't:
+    return true;
+  }
   if (msg?.type === "NAVIGATE") {
     console.log("got message");
     (async () => {

@@ -1,10 +1,10 @@
+import { GitBranchIcon } from 'lucide-react';
 import React from 'react';
 
 const BubbleButton = ({text} : {text:string}) => {
     const onClick = () => {
-        console.log("text");
+        chrome.runtime.sendMessage({ type: 'SELECTION', text });
     }
-
     const onMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
     };
@@ -13,11 +13,14 @@ const BubbleButton = ({text} : {text:string}) => {
       <button
         id="ext-add-to-prompt-btn"
         type="button"
-        className="btn relative shadow-long flex rounded-xl border-none"
+        className="btn relative bg-black btn-secondary active:opacity-1 shadow-long flex rounded-xl border-none"
         onMouseDown={onMouseDown}
         onClick={onClick}
       >
-        click this;
+        <div className='flex items-center justify-center gap-1.5 whitespace-nowrap! max-md:sr-only'>
+        <GitBranchIcon width={20} height={20}/>
+        Add to BranChat
+        </div>
       </button>
     )
 

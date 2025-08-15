@@ -1,6 +1,7 @@
-import React ,{useState} from "react";
+import React ,{useState, useEffect} from "react";
 import { createPortal } from "react-dom";
 import "@/global.css"; // <-- Tailwind entry (see #3)
+type SelMsg = { type: 'SELECTION_RELAY'; text: string; tabId: number };
 
 function PortalBottom({ children }: { children: React.ReactNode }) {
   const [host] = React.useState(() => document.createElement("div"));
@@ -14,6 +15,29 @@ function PortalBottom({ children }: { children: React.ReactNode }) {
 function SidePanel() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activeTabId, setActiveTabId] = useState<number | null>(null);
+  const [text, setText] = useState<string>('');
+
+  useEffect(() => {
+    // Get the current active tab id for this window
+    (async () => {
+      const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+      setActiveTabId(tab?.id ?? null);
+    })();
+
+    const handler = (msg: SelMsg) => {
+      console.log(msg.text);
+      if (msg?.type !== 'SELECTION_RELAY') return;
+      if (activeTabId == null || msg.tabId !== activeTabId) {
+        console.log("no");
+        return
+     };
+      setText(msg.text);
+    };
+
+    chrome.runtime.onMessage.addListener(handler as any);
+    return () => chrome.runtime.onMessage.removeListener(handler as any);
+  }, [activeTabId]);
 
   function handleSubmit(prompt : string, url : string){
     setLoading(true);
@@ -45,8 +69,8 @@ function SidePanel() {
                 <div className="flex items-center gap-1 rounded-full border border-white/15 px-2 py-1 text-xs">
                   GPT-5 mini
                 </div>
-                <div className="ml-2 truncate text-sm text-zinc-400">
-                  Chrome extension prompt trigger
+                <div className="ml-2 truncate text-sm truncate text-zinc-400">
+                  {text}
                 </div>
               </div>
               <div className="flex items-center gap-3 text-zinc-400">
@@ -86,7 +110,7 @@ function SidePanel() {
                 }}>
 
                   {loading ? "..." : ">"}
-                  
+
                 </button>
               </div>
             </div>

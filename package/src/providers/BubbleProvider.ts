@@ -16,9 +16,10 @@ export class BubbleProvider extends DomProvider{
         const els = findAllByTag<HTMLElement>(root, this.s.askBubbleQ[0])
         if(!els) return null;
         for(const el of els){
-            const style = getComputedStyle(el);
-            const hasButton = !!el.querySelector("button");
-            if (hasButton && style.position === "absolute") return el;
+            const hasButton = !!el.querySelector('button');
+            if (hasButton && getComputedStyle(el).position === 'absolute') {
+                return el;
+            }
         }
         return null;
     }
@@ -31,8 +32,12 @@ export class BubbleProvider extends DomProvider{
     }
 
     hasMeaningfulSelection(min = config.MIN_CHARS): boolean {
-        const sel = window.getSelection?.();
+        const sel = window.getSelection?.()
         if (!sel || sel.isCollapsed) return false;
+        //console.log("length":sel.toString().trim().length);
+        //console.log("min:", min)
+        //console.log(sel.toString().trim().length >= min)
+        //console.log(sel.isCollapsed);
         return sel.toString().trim().length >= min;
     }
 
