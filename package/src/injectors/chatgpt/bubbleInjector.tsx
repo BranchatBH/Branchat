@@ -33,8 +33,13 @@ export default function BubbleInjector({ dom }: { dom: BubbleProvider }) {
           placeholder.id = "my-ext-placeholder";
           let target : HTMLElement | null = null;
           if(host){
+            let placeholder = host.querySelector<HTMLElement>('#my-ext-placeholder');
+            if (!placeholder) {
+            placeholder = document.createElement('div');
+            placeholder.id = 'my-ext-placeholder';
             host.prepend(placeholder);
-            target = placeholder;
+            }
+          target = placeholder;
           }
           console.log(target);
           setContainer(target ?? null);

@@ -1,4 +1,5 @@
 import React ,{useState, useEffect} from "react";
+import { CornerDownRight } from "lucide-react";
 import { createPortal } from "react-dom";
 import "@/global.css"; // <-- Tailwind entry (see #3)
 type SelMsg = { type: 'SELECTION_RELAY'; text: string; tabId: number };
@@ -29,7 +30,6 @@ function SidePanel() {
       console.log(msg.text);
       if (msg?.type !== 'SELECTION_RELAY') return;
       if (activeTabId == null || msg.tabId !== activeTabId) {
-        console.log("no");
         return
      };
       setText(msg.text);
@@ -60,25 +60,33 @@ function SidePanel() {
       {/* bottom composer – portaled to <body> so parent transforms/overflow can’t trap it */}
       <PortalBottom>
         <div className="fixed inset-x-0 bottom-6 mx-auto w-[min(900px,95vw)] z-[2147483647]">
-          <div className="rounded-2xl border border-white/10 bg-zinc-900/80 text-zinc-100
+          <div className="rounded-2xl relative border border-white/10 bg-zinc-900/80 text-zinc-100
                           shadow-[0_12px_40px_rgba(0,0,0,0.7)] backdrop-blur-xl p-3">
             {/* header row */}
-            <div className="mb-2 flex items-center justify-between rounded-xl border border-white/10
-                            bg-white/5 px-3 py-2 text-zinc-200">
-              <div className="flex min-w-0 items-center gap-2">
-                <div className="flex items-center gap-1 rounded-full border border-white/15 px-2 py-1 text-xs">
-                  GPT-5 mini
-                </div>
-                <div className="ml-2 truncate text-sm truncate text-zinc-400">
-                  {text}
-                </div>
-              </div>
-              <div className="flex items-center gap-3 text-zinc-400">
-                <span className="text-xs">⚙️</span>
-                <span className="text-xs">⏱️</span>
-              </div>
-            </div>
+            {text ? (
+                <div className="mb-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-zinc-200">
+                    <div className="flex items-center justify-between">
+                    <div className="flex min-w-0 items-center">
+                        <div className="flex items-center px-1 py-1 text-xs">
+                        <CornerDownRight width={14} height={14} />
+                        </div>
+                        <div className="ml-2 truncate text-sm text-zinc-400">
+                        {text}
+                        </div>
+                    </div>
+                    </div>
 
+                    {/* close button */}
+                    <button
+                    className="absolute top-0 right-0 m-1 flex h-5 w-5 items-center justify-center 
+                                rounded-full bg-zinc-900 text-white text-xs hover:cursor-pointer 
+                                active:opacity-80"
+                    onClick={()=>setText('')}
+                    >
+                    ×
+                    </button>
+                </div>
+                ) : null}
             {/* textarea */}
             <div className="rounded-xl border border-white/10 bg-white/5 p-3">
               <textarea

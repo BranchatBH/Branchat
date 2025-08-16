@@ -3,6 +3,7 @@ import React from 'react';
 
 const BubbleButton = ({text} : {text:string}) => {
     const onClick = () => {
+        console.log("sending message from button:", text);
         chrome.runtime.sendMessage({ type: 'SELECTION', text });
     }
     const onMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -12,7 +13,7 @@ const BubbleButton = ({text} : {text:string}) => {
     return(
       <button
         id="ext-add-to-prompt-btn"
-        type="button"
+        type="submit"
         className="btn relative bg-black btn-secondary active:opacity-1 shadow-long flex rounded-xl border-none"
         onMouseDown={onMouseDown}
         onClick={onClick}

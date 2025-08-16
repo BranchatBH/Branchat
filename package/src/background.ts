@@ -112,8 +112,9 @@ chrome.webNavigation.onCommitted.addListener(async ({ tabId, url, frameId }) => 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type === 'SELECTION') {
     const tabId = currentTabId
-    console.log("heard from background");
+    console.log("heard from background:", msg.text);
     if (!tabId) return; 
+
     chrome.runtime.sendMessage({
       type: 'SELECTION_RELAY',
       text: msg.text,
