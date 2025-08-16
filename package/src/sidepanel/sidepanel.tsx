@@ -30,8 +30,10 @@ function SidePanel() {
       console.log(msg.text);
       if (msg?.type !== 'SELECTION_RELAY') return;
       if (activeTabId == null || msg.tabId !== activeTabId) {
+        console.log("wrong tab : ", msg.tabId, activeTabId);
         return
      };
+      console.log("msg.text:", msg.text);
       setText(msg.text);
     };
 
@@ -41,7 +43,9 @@ function SidePanel() {
 
   function handleSubmit(prompt : string, url : string){
     setLoading(true);
-    chrome.runtime.sendMessage({type : "NAVIGATE", prompt, url}).then(() => setLoading(false))
+    const concat = text + prompt; 
+    console.log(concat);
+    chrome.runtime.sendMessage({type : "NAVIGATE", prompt:concat, url}).then(() => setLoading(false))
         .catch((err) => console.log(err));
     console.log("navigate");
   }  

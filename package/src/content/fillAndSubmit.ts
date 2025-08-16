@@ -8,15 +8,14 @@ declare global {
 }
 
 export async function fillAndSubmit(prompt: string, provider : Provider | null): Promise<boolean> {
-  console.log("fillAndSubmit called: ", prompt);
   if(!provider){
     throw new Error("no provider");
   }
   const submitProvider = new SubmitProvider(document, provider);
 
-  if (!prompt?.trim()) return false;
+  if (!prompt?.trim()) {console.log("no prompt");return false;}
 
-  if (window.__myExtBusy) return false;
+  if (window.__myExtBusy) {console.log("window is busy!");return false;}
   window.__myExtBusy = true;
 
   try {

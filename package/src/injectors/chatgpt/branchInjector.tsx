@@ -7,7 +7,7 @@ type Props = { dom: DomProvider };
 
 export default function BranchInjector({ dom }: Props) {
   const [targets, setTargets] = useState<HTMLElement[]>([]);
-
+  console.log(window.location.href.slice(-4));
   const inject = () => {
     const bars = Array.from(dom.branchButtons() ?? []);
     const newHosts: HTMLElement[] = [];

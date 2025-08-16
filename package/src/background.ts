@@ -85,11 +85,10 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(({ tabId, url }) => {
   debounce(tabId, async () => {
     try {
       await ensureContentScript(tabId);
-      // Optionally, nudge the CS to (re)mount after nav
+      console.log("post_navigate");
       chrome.tabs.sendMessage(tabId, { type: "POST_NAVIGATE" });
     } catch (e) {
-      // ignore/trace
-      // console.log("ensureContentScript failed", e);
+      console.log(e);
     }
   }, 150);
 }, { url: [{ hostSuffix: "chatgpt.com" }] });
@@ -103,8 +102,9 @@ chrome.webNavigation.onCommitted.addListener(async ({ tabId, url, frameId }) => 
     try {
       await waitForComplete(tabId);
       await ensureContentScript(tabId);
+      console.log("post_navigate");
       chrome.tabs.sendMessage(tabId, { type: "POST_NAVIGATE" });
-    } catch {}
+    } catch(e) {console.log(e);}
   }, 150);
 }, { url: [{ hostSuffix: "chatgpt.com" }] });
 
@@ -136,6 +136,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         console.log(tabId);
         await waitForComplete(tabId);
         await ensureContentScript(tabId);
+        console.log("content script loaded");
         chrome.tabs.sendMessage(tabId, { type: "RUN_FILL_AND_SUBMIT", prompt: msg.prompt ?? "" }, (res:any) => {
           if (chrome.runtime.lastError) return sendResponse({ success: false });
           sendResponse(res ?? { success: false });
