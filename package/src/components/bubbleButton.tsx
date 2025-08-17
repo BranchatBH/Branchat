@@ -2,9 +2,16 @@ import { GitBranchIcon } from 'lucide-react';
 import React from 'react';
 
 const BubbleButton = ({text} : {text:string}) => {
-    const onClick = () => {
-        console.log("sending message from button:", text);
-        chrome.runtime.sendMessage({ type: 'SELECTION', text });
+    const onClick = async () => {
+        const res = await chrome.runtime.sendMessage({type:'OPEN_SIDEBAR'});
+        if(res?.success){
+            await chrome.runtime.sendMessage({ type: 'SELECTION', text });
+        }
+        else{
+            console.log(res);
+            console.log(res?.error);
+            console.log("error");
+        }
     }
     const onMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
@@ -18,9 +25,9 @@ const BubbleButton = ({text} : {text:string}) => {
         onMouseDown={onMouseDown}
         onClick={onClick}
       >
-        <div className='flex items-center justify-center gap-1.5 whitespace-nowrap! max-md:sr-only'>
-        <GitBranchIcon width={20} height={20}/>
-        Add to BranChat
+        <div className='flex items-center justify-center gap-1.5 whitespace-nowrap!'>
+            <GitBranchIcon width={20} height={20}/>
+            <div className="max-md:sr-only">Add to BranChat</div>
         </div>
       </button>
     )

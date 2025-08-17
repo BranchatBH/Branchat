@@ -124,6 +124,20 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   // Keep channel open only if using async; here we don't:
     return true;
   }
+  if (msg?.type === "OPEN_SIDEPANEL"){
+    const tabId = currentTabId;
+    if(!tabId){ console.log("no tabID"); sendResponse({success:false}); return;}
+    try{
+        chrome.sidePanel.open({tabId}, () => {
+        sendResponse({success:true})
+        });
+    }
+    catch(error){
+        sendResponse({success:false, error})
+        console.log(error);
+    }
+    return true;
+  }
   if (msg?.type === "NAVIGATE") {
     console.log("got message");
     (async () => {
