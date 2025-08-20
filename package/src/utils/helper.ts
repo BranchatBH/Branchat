@@ -32,7 +32,3 @@ export const debounced = <T extends (...args : any[]) => any>(fn : T, ms = 80) =
 
 };
 
-export const extractMarkdown = (div : HTMLDivElement) : string | null => {
-    return 'hi';
-}
-

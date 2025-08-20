@@ -3,7 +3,7 @@ import React from 'react';
 
 const BubbleButton = ({text} : {text:string}) => {
     const onClick = async () => {
-        const res = await chrome.runtime.sendMessage({type:'OPEN_SIDEBAR'});
+        const res = await chrome.runtime.sendMessage({type:'OPEN_SIDEPANEL'});
         if(res?.success){
             await chrome.runtime.sendMessage({ type: 'SELECTION', text });
         }

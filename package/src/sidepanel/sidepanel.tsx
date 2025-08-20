@@ -2,7 +2,6 @@ import React ,{useState, useEffect} from "react";
 import { CornerDownRight } from "lucide-react";
 import { createPortal } from "react-dom";
 import "@/global.css"; // <-- Tailwind entry (see #3)
-type SelMsg = { type: 'SELECTION_RELAY'; text: string; tabId: number };
 
 function PortalBottom({ children }: { children: React.ReactNode }) {
   const [host] = React.useState(() => document.createElement("div"));
@@ -20,26 +19,36 @@ function SidePanel() {
   const [text, setText] = useState<string>('');
 
   useEffect(() => {
-    // Get the current active tab id for this window
+    let disposed = false;
+
     (async () => {
       const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-      setActiveTabId(tab?.id ?? null);
+      if (!disposed) setActiveTabId(tab?.id ?? null);
     })();
 
-    const handler = (msg: SelMsg) => {
-      console.log(msg.text);
-      if (msg?.type !== 'SELECTION_RELAY') return;
-      if (activeTabId == null || msg.tabId !== activeTabId) {
-        console.log("wrong tab : ", msg.tabId, activeTabId);
-        return
-     };
-      console.log("msg.text:", msg.text);
-      setText(msg.text);
+    const handler = (msg: any, sender: any, sendResponse: (x: any) => void) => {
+      if (msg?.type === 'PING_SIDEPANEL') {
+        console.log("PING_SIDEPANEL -> READY");
+        sendResponse({ ready: true }); 
+        return;
+      }
+      if (msg?.type === 'SELECTION_RELAY') {
+        if (activeTabId == null || msg.tabId !== activeTabId) {
+          console.log('wrong tab:', msg.tabId, activeTabId);
+          return;
+        }
+        console.log('msg.text:', msg.text);
+        setText(msg.text);
+      }
     };
 
-    chrome.runtime.onMessage.addListener(handler as any);
-    return () => chrome.runtime.onMessage.removeListener(handler as any);
+    chrome.runtime.onMessage.addListener(handler);
+    return () => {
+      disposed = true;
+      chrome.runtime.onMessage.removeListener(handler);
+    };
   }, [activeTabId]);
+
 
   function handleSubmit(prompt : string, url : string){
     setLoading(true);

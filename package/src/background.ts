@@ -36,6 +36,25 @@ async function pingContent(tabId: number, timeoutMs = 3000): Promise<boolean> {
     });
   });
 }
+function pingSidePanel(timeoutMs = 3000): Promise<boolean> {
+  return new Promise((resolve) => {
+    const t = setTimeout(() => resolve(false), timeoutMs);
+    chrome.runtime.sendMessage({ type: 'PING_SIDEPANEL' }, (reply) => {
+      clearTimeout(t);
+      if (chrome.runtime.lastError) return resolve(false);
+      resolve(Boolean(reply?.ready));
+    });
+  });
+}
+
+async function ensureSidePanel(tabId: number) {
+  for (let i = 0; i < 20; i++) {
+    if (await pingSidePanel()) return;
+    await delay(200);
+  }
+  console.log('timeout');
+  throw new Error('SidePanel is not ready');
+}
 
 async function ensureContentScript(tabId: number) {
   // already there?
@@ -111,18 +130,24 @@ chrome.webNavigation.onCommitted.addListener(async ({ tabId, url, frameId }) => 
 // Example: public API your UI can call
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type === 'SELECTION') {
-    const tabId = currentTabId
-    console.log("heard from background:", msg.text);
-    if (!tabId) return; 
+    (async () => {
+      const tabId = currentTabId;
+      if (!tabId) { console.log('no tabId'); sendResponse({ ok: false }); return; }
 
-    chrome.runtime.sendMessage({
-      type: 'SELECTION_RELAY',
-      text: msg.text,
-      tabId,
-    });
-    sendResponse({ ok: true });
-  // Keep channel open only if using async; here we don't:
-    return true;
+      try {
+        await ensureSidePanel(tabId); // uses runtime.sendMessage now
+        await chrome.runtime.sendMessage({
+          type: 'SELECTION_RELAY',
+          text: msg.text,
+          tabId,
+        });
+        sendResponse({ ok: true });
+      } catch (err) {
+        console.log(err);
+        sendResponse({ ok: false, error: String(err) });
+      }
+    })();
+  return true; // keep the message channel open for the async sendResponse
   }
   if (msg?.type === "OPEN_SIDEPANEL"){
     const tabId = currentTabId;
