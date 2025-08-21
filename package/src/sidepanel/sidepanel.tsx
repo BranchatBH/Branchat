@@ -2,6 +2,9 @@ import React ,{useState, useEffect} from "react";
 import { CornerDownRight } from "lucide-react";
 import { createPortal } from "react-dom";
 import "@/global.css"; // <-- Tailwind entry (see #3)
+import LoginButton from "@/components/loginButton";
+import { useAuthContext } from "@/context/AuthContext";
+import LogoutButton from "@/components/logoutButton";
 
 function PortalBottom({ children }: { children: React.ReactNode }) {
   const [host] = React.useState(() => document.createElement("div"));
@@ -17,6 +20,7 @@ function SidePanel() {
   const [loading, setLoading] = useState(false);
   const [activeTabId, setActiveTabId] = useState<number | null>(null);
   const [text, setText] = useState<string>('');
+  const {authUser, loading:userLoading ,error} = useAuthContext();
 
   useEffect(() => {
     let disposed = false;
@@ -63,10 +67,14 @@ function SidePanel() {
     <div className="min-h-full h-screen relative bg-gradient-to-b from-zinc-50 to-zinc-100 dark:from-zinc-950 dark:to-zinc-900">
       {/* your page content */}
       <div className="p-6 text-zinc-800 dark:text-zinc-200">
+        {authUser ? authUser.profileImageUrl : <LoginButton/>}
         <h1 className="text-2xl font-semibold">Hello 👋</h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           This is the side panel body. Scroll if needed.
         </p>
+        <div>
+          {authUser ? <LogoutButton/> : <></>}
+        </div>
         <div className="h-[60vh]" />
       </div>
 
