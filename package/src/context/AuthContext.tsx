@@ -52,7 +52,7 @@ export const AuthContextProvider: React.FC<Props> = ({ children }) => {
     let res = await fetch(API_ORIGIN + path, { ...init, headers });
 
     if (res.status === 401) {
-      console.log("server didnt respond");
+      console.log("unauthorized");
       try {
         const at = await ensureAccessToken();
         headers.set("Authorization", `Bearer ${at}`);

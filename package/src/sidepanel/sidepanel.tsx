@@ -58,16 +58,29 @@ function SidePanel() {
     setLoading(true);
     const concat = text + prompt; 
     console.log(concat);
-    chrome.runtime.sendMessage({type : "NAVIGATE", prompt:concat, url}).then(() => setLoading(false))
-        .catch((err) => console.log(err));
-    console.log("navigate");
+    chrome.runtime.sendMessage({type : "NAVIGATE", prompt:concat, url})
+       .then(() => setLoading(false))
+        .catch((err) => {
+         console.error("Navigation failed:", err);
+          setLoading(false);
+        });
   }  
 
   return (
     <div className="min-h-full h-screen relative bg-gradient-to-b from-zinc-50 to-zinc-100 dark:from-zinc-950 dark:to-zinc-900">
       {/* your page content */}
       <div className="p-6 text-zinc-800 dark:text-zinc-200">
-        {authUser ? authUser.profileImageUrl : <LoginButton/>}
+        {authUser ? (
+          authUser.profileImageUrl && (
+              <img 
+                src={authUser.profileImageUrl} 
+                alt={authUser.name || "Profile"} 
+                className="w-10 h-10 rounded-full"
+              />
+            )
+          ) : (
+            <LoginButton/>
+          )}
         <h1 className="text-2xl font-semibold">Hello 👋</h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           This is the side panel body. Scroll if needed.
