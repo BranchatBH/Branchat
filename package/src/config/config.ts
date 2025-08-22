@@ -1,7 +1,5 @@
-export default {
-    newChatQuery : {
-
-        chatGPT : '[class*="@container/thread"]',
-
-    },
+const config ={
+    MIN_CHARS : 3
 }
+
+export default config;

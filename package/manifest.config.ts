@@ -17,7 +17,7 @@ export default defineManifest({
     }
   },
   content_scripts: [{
-    js: ['src/content/content.tsx'],
+    js: ['src/content/content.tsx', 'src/content/fillAndSubmit.ts'],
     matches: ['<all_urls>'],
   }],
   background: {
@@ -32,7 +32,7 @@ export default defineManifest({
     "tabs",
     "sidePanel",
     "declarativeNetRequest", "declarativeNetRequestWithHostAccess", "webRequest", "windows",
-    "activeTab", "scripting"
+    "activeTab", "scripting","contextMenus","webNavigation"
   ],
   web_accessible_resources: [{
     resources: ["src/sidepanel/main.html"],
