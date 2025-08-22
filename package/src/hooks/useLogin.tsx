@@ -63,7 +63,7 @@ function waitForCode(expectedOrigin: string): Promise<{ code: string; state: str
     }, 120000);
 
     function onMessage(ev: MessageEvent) {
-      console.log("got message");
+      console.log("message", ev.origin , ev.data);
       if (ev.origin !== expectedOrigin) return; // security: only trust your domain
       const { type, code, state, error } = (ev.data || {}) as {
         type?: string;

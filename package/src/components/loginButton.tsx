@@ -4,7 +4,7 @@ const LoginButton = () => {
   const { login, inProgress: loading, error } = useLogin();
 
   if (error) {
-    return <div>{error ?? "Something went wrong"}</div>;
+    return <div className="z-10 bg-white text-red-500 font-bold">{"Something went wrong"}</div>;
   }
 
   return (
