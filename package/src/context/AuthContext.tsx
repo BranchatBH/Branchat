@@ -52,13 +52,15 @@ export const AuthContextProvider: React.FC<Props> = ({ children }) => {
     let res = await fetch(API_ORIGIN + path, { ...init, headers });
 
     if (res.status === 401) {
+      console.log("server didnt respond");
       try {
         const at = await ensureAccessToken();
         headers.set("Authorization", `Bearer ${at}`);
         res = await fetch(API_ORIGIN + path, { ...init, headers });
       } catch {
-        // give up + clear local tokens
-        await clearLocalAuth();
+          setError("error while fetching")
+          await clearLocalAuth();
+          throw new Error("error");
       }
     }
     return res;

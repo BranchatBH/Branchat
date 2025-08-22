@@ -3,8 +3,9 @@ import { useAuthContext, type AuthUser } from "../context/AuthContext";
 import { API_ORIGIN, acceptLoginTokens } from "../utils/auth";
 
 // ======= CONFIG: fill these in =======
-const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID";
-const REDIRECT_URI = "https://myapp.com/auth/callback"; // your bridge/callback page
+const GOOGLE_CLIENT_ID = "139435746696-ipu6o7pouh8238htm0ug9luh7h1gisjv.apps.googleusercontent.com";
+const GOOGLE_CLIENT_PASSWORD = "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"
+const REDIRECT_URI = "https://branchat.netlify.app/auth/callback"; // your bridge/callback page
 const SCOPES = ["openid", "email", "profile"];          // adjust if needed
 const AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
 // =====================================
@@ -54,10 +55,6 @@ function openPopup(url: string, w = 480, h = 640): Window | null {
   );
 }
 
-/**
- * Wait for your redirect/bridge page to postMessage back:
- *   window.opener.postMessage({ type: 'OAUTH_CODE', code, state, error }, '*')
- */
 function waitForCode(expectedOrigin: string): Promise<{ code: string; state: string }> {
   return new Promise((resolve, reject) => {
     const timeout = window.setTimeout(() => {
@@ -66,6 +63,7 @@ function waitForCode(expectedOrigin: string): Promise<{ code: string; state: str
     }, 120000);
 
     function onMessage(ev: MessageEvent) {
+      console.log("got message");
       if (ev.origin !== expectedOrigin) return; // security: only trust your domain
       const { type, code, state, error } = (ev.data || {}) as {
         type?: string;
@@ -92,6 +90,7 @@ function waitForCode(expectedOrigin: string): Promise<{ code: string; state: str
 export function useLogin() {
   const { setAuthUser, apiFetch, getMe } = useAuthContext();
   const [inProgress, setInProgress] = useState(false);
+  const [error, setError] = useState(false);
   const popupRef = useRef<Window | null>(null);
 
   useEffect(() => {
@@ -117,54 +116,48 @@ export function useLogin() {
       authUrl.searchParams.set("code_challenge", codeChallenge);
       authUrl.searchParams.set("code_challenge_method", "S256");
       authUrl.searchParams.set("state", state);
-      // For Google refresh tokens:
       authUrl.searchParams.set("access_type", "offline");
       authUrl.searchParams.set("prompt", "consent"); // ensure refresh token on re-consent
 
-      // 3) Open popup, go through Google, land on your redirect URI
       popupRef.current = openPopup(authUrl.toString());
       if (!popupRef.current) throw new Error("Popup blocked");
 
-      // 4) Receive code/state from your bridge page
       const redirectOrigin = new URL(REDIRECT_URI).origin;
       const { code, state: returnedState } = await waitForCode(redirectOrigin);
+      console.log(code, state);
 
-      // 5) Verify state to prevent CSRF
       if (returnedState !== state) {
         throw new Error("State mismatch");
       }
 
-      // 6) Call backend callback (BEGIN backend work)
-      //    You said Step 6 is GET /auth/oauth2/google/callback?code=...&state=...
-      //    We must also pass code_verifier so the backend can exchange the code in Step 7.
-      //    NOTE: sending code_verifier in query is OK, but POST is cleaner if you can change it.
       const cbUrl = new URL(`${API_ORIGIN}/auth/login/google`);
       cbUrl.searchParams.set("code", code);
       cbUrl.searchParams.set("state", state);
-      cbUrl.searchParams.set("code_verifier", codeVerifier); // <- include PKCE verifier
+      cbUrl.searchParams.set("code_verifier", codeVerifier); 
 
       const cbRes = await fetch(cbUrl.toString(), { method: "GET", credentials: "omit" });
       if (!cbRes.ok) {
         const t = await cbRes.text().catch(() => "");
         throw new Error(`Callback failed: ${cbRes.status} ${t}`);
       }
-      // 7→10 happen on your backend; it returns your app tokens:
-      //    { accessToken, refreshToken, accessExp? }
+
       const tokens = await cbRes.json();
 
-      // Save tokens locally (refresh -> session storage, access -> memory)
       await acceptLoginTokens(tokens);
 
-      // 11) Use app token to fetch the logged-in user
       const me = await getMe();
       setAuthUser(me);
 
       return me;
-    } finally {
+    } catch(error){
+      setError(true);
+      console.log("error:", error);
+      return null;
+    }finally {
       setInProgress(false);
       try { popupRef.current?.close(); } catch {}
     }
   }, [inProgress, setAuthUser, apiFetch, getMe]);
 
-  return { login, inProgress };
+  return { login, inProgress, error };
 }
