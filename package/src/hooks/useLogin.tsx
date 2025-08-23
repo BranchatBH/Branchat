@@ -2,15 +2,12 @@ import { useCallback, useRef, useState, useEffect } from "react";
 import { useAuthContext, type AuthUser } from "../context/AuthContext";
 import { API_ORIGIN, acceptLoginTokens } from "../utils/auth";
 
-// ======= CONFIG: fill these in =======
-const GOOGLE_CLIENT_ID = "663400441243-3m0le0q4oocro9lkldeq5h3d24f5ut0t.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 //const GOOGLE_CLIENT_PASSWORD = "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"
-const REDIRECT_URI = "http://localhost:3000/auth/google/callback"; // your bridge/callback page
+const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI;
 const SCOPES = ["openid", "email", "profile"];          // adjust if needed
-const AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
-// =====================================
+const AUTH_ENDPOINT = import.meta.env.VITE_AUTH_ENDPOINT;
 
-/** RFC7636: generate a code_verifier (43-128 chars) from unreserved chars */
 function randomVerifier(length = 64): string {
   const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
   const array = new Uint32Array(length);
@@ -22,7 +19,6 @@ function randomVerifier(length = 64): string {
   return out;
 }
 
-/** Random state string (not as strict as verifier, just needs to be unpredictable) */
 function randomState(length = 32): string {
   const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   const array = new Uint32Array(length);
@@ -153,7 +149,7 @@ export function useLogin() {
       setAuthUser(me);
 
       return me;
-      
+
     } catch(error){
       setError(true);
       console.log("error:", error);

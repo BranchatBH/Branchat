@@ -8,7 +8,6 @@ export function findByTags<T extends HTMLElement>(root : Document | HTMLElement 
 }
 
 export function findAllByTag<T extends HTMLElement>(root: Document | HTMLElement = document, tag: string): NodeListOf<T> {
-  // querySelectorAll은 null을 반환하지 않으므로, null 체크가 불필요합니다.
   return root.querySelectorAll(tag) as NodeListOf<T>;
 }
 
