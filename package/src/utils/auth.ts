@@ -1,11 +1,10 @@
-export const API_ORIGIN = "http://localhost:8080/api/v1"; 
+export const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || "";
 const RT_KEY = "refreshToken";
 const SKEW_SEC = 60;
 
 export type TokenBundle = {
   accessToken: string;
   refreshToken: string;
-  accessExp?: number;
 };
 
 async function getRefresh(): Promise<string | null> {
@@ -32,9 +31,10 @@ function parseJwtExp(token: string): number | null {
     return null;
   }
 }
-function setAccess(at: string, exp?: number) {
+function setAccess(at: string) {
   accessToken = at;
-  accessExpSec = exp ?? parseJwtExp(at) ?? nowSec() + 300; // fallback 5m
+  accessExpSec = parseJwtExp(at) ?? nowSec() + 300;
+  console.log("accessToken:", at, "accessExpSec:", accessExpSec); // fallback 5m
 }
 function clearAccess() {
   accessToken = null;
@@ -56,16 +56,19 @@ async function callRefreshEndpoint(rt: string): Promise<TokenBundle> {
 }
 
 export async function ensureAccessToken(): Promise<string> {
-  if (!needsRefresh()) return accessToken as string;
+  if (!needsRefresh()) {
+    console.log("accessToken ensured:", accessToken);
+    return accessToken as string;
+  }
   if (refreshing) return refreshing;
 
   refreshing = (async () => {
     const rt = await getRefresh();
     if (!rt) throw new Error("Not authenticated");
-    const { accessToken: at, refreshToken: newRt, accessExp } =
+    const { accessToken: at, refreshToken: newRt } =
       await callRefreshEndpoint(rt);
     if (newRt && newRt !== rt) await setRefresh(newRt);
-    setAccess(at, accessExp);
+    setAccess(at);
     return at;
   })();
 
@@ -77,8 +80,9 @@ export async function ensureAccessToken(): Promise<string> {
 }
 
 export async function acceptLoginTokens(bundle: TokenBundle): Promise<void> {
+  console.log("acceptLoginTokens:", bundle);
   await setRefresh(bundle.refreshToken);
-  setAccess(bundle.accessToken, bundle.accessExp);
+  setAccess(bundle.accessToken);
 }
 
 export async function clearLocalAuth(): Promise<void> {

@@ -142,11 +142,11 @@ export function useLogin() {
         const t = await cbRes.text().catch(() => "");
         throw new Error(`Callback failed: ${cbRes.status} ${t}`);
       }
-
+      
       console.log("cbRes:", cbRes);
       const tokens = await cbRes.json();
-      console.log("tokens:", tokens);
-      await acceptLoginTokens(tokens);
+      console.log("tokens:", tokens.data);
+      await acceptLoginTokens(tokens.data);
 
       const me = await getMe();
 
