@@ -45,7 +45,10 @@ export const AuthContextProvider: React.FC<Props> = ({ children }) => {
     const headers = new Headers(init.headers || {});
     try {
       const at = await ensureAccessToken();
-      if (at) headers.set("Authorization", `Bearer ${at}`);
+      if (at) {
+        headers.set("Authorization", `Bearer ${at}`);
+      }
+
     } catch {
     }
 
@@ -67,7 +70,9 @@ export const AuthContextProvider: React.FC<Props> = ({ children }) => {
 
   const getMe = useCallback(async (): Promise<AuthUser> => {
     try {
-      const r = await apiFetch("/auth/users");
+      const r = await apiFetch("/users", {headers:{
+        "Content-Type" : "application/json"
+      }});
       return r.ok ? ((await r.json()) as AuthUser) : null;
     } catch {
       return null;
