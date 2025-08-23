@@ -1,3 +1,4 @@
+import { AuthUser } from "@/context/AuthContext";
 import { useLogin } from "@/hooks/useLogin";
 
 const LoginButton = () => {
@@ -7,10 +8,14 @@ const LoginButton = () => {
     return <div className="z-10 bg-white text-red-500 font-bold">{"Something went wrong"}</div>;
   }
 
+  const handleClick = async () => {
+    await login();
+  }
+
   return (
     <button
       className="p-2 text-md font-bold hover:cursor-pointer"
-      onClick={login}
+      onClick={handleClick}
       disabled={loading}
     >
       {loading ? "Loading..." : "Login"}

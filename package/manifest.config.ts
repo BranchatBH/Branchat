@@ -32,7 +32,7 @@ export default defineManifest({
     "tabs",
     "sidePanel",
     "declarativeNetRequest", "declarativeNetRequestWithHostAccess", "webRequest", "windows",
-    "activeTab", "scripting","contextMenus","webNavigation"
+    "activeTab", "scripting", "contextMenus", "webNavigation", "storage"
   ],
   web_accessible_resources: [{
     resources: ["src/sidepanel/main.html"],
