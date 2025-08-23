@@ -57,16 +57,8 @@ async function ensureSidePanel(tabId: number) {
 }
 
 async function ensureContentScript(tabId: number) {
-  // already there?
   if (await pingContent(tabId)) return;
 
-  // inject built JS
-  await chrome.scripting.executeScript({
-    target: { tabId },
-    files: [CONTENT_FILE],
-  });
-
-  // give it a moment to boot
   for (let i = 0; i < 6; i++) {
     if (await pingContent(tabId)) return;
     await delay(200);
@@ -75,7 +67,6 @@ async function ensureContentScript(tabId: number) {
   throw new Error("Content script not ready after injection");
 }
 
-// Optional: wait for 'complete' status (useful on hard loads; SPA often already 'complete')
 async function waitForComplete(tabId: number) {
   try {
     const t = await chrome.tabs.get(tabId);
@@ -187,4 +178,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     })();
     return true; // keep channel open
   }
+});
+
+self.addEventListener("error", (e: any) => {
+  console.error("SW ErrorEvent:", e?.error || e?.message || e);
+});
+self.addEventListener("unhandledrejection", (e: any) => {
+  console.error("SW UnhandledRejection:", e?.reason);
 });

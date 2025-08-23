@@ -140,3 +140,12 @@ window.addEventListener("beforeunload", () => {
   window.__branchatRoot = null;
   window.__branchatMountEl = null;
 });
+
+// Put at top of the file (before your code)
+window.addEventListener("error", (e) => {
+  // Errors thrown from code or imports
+  console.error("Content ErrorEvent:", e.error ?? e.message ?? e);
+});
+window.addEventListener("unhandledrejection", (e) => {
+  console.error("Content UnhandledRejection:", e.reason);
+});
