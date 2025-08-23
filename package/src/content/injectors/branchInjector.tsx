@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import NewChatButton from "@/components/newChatButton";
-import { DomProvider } from "@/providers/DomProvider";
+import { DomProvider } from "@/content/providers/DomProvider";
 import { extractMarkdown } from "@/utils/extractMarkdown";
 
 type Props = { dom: DomProvider };

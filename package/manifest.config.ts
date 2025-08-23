@@ -17,7 +17,7 @@ export default defineManifest({
     }
   },
   content_scripts: [{
-    js: ['src/content/content.tsx', 'src/content/fillAndSubmit.ts'],
+    js: ['src/content/index.tsx'],
     matches: ['<all_urls>'],
   }],
   background: {

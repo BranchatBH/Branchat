@@ -2,7 +2,7 @@ import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import BubbleButton from "@/components/bubbleButton";
 import { debounced } from "@/utils/helper";
-import { BubbleProvider } from "@/providers/BubbleProvider";
+import { BubbleProvider } from "@/content/providers/BubbleProvider";
 
 export default function BubbleInjector({ dom }: { dom: BubbleProvider }) {
   const [container, setContainer] = useState<HTMLElement | null>(null);

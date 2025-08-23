@@ -1,4 +1,4 @@
-import { SubmitProvider } from "@/providers/SubmitProvider";
+import { SubmitProvider } from "@/content/providers/SubmitProvider";
 import { Provider } from "@/types/types";
 
 declare global {
