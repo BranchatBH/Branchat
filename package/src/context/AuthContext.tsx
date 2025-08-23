@@ -58,9 +58,8 @@ export const AuthContextProvider: React.FC<Props> = ({ children }) => {
         headers.set("Authorization", `Bearer ${at}`);
         res = await fetch(API_ORIGIN + path, { ...init, headers });
       } catch {
-          setError("error while fetching")
           await clearLocalAuth();
-          throw new Error("error");
+          throw new Error("unauthorized");
       }
     }
     return res;

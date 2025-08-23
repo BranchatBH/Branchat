@@ -9,7 +9,8 @@ const LoginButton = () => {
   }
 
   const handleClick = async () => {
-    await login();
+    login().then(() => console.log("successfully logined")).catch((e)=>console.log("login error:", e));
+
   }
 
   return (

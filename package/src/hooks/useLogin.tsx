@@ -117,12 +117,13 @@ export function useLogin() {
       authUrl.searchParams.set("code_challenge_method", "S256");
       authUrl.searchParams.set("state", state);
       authUrl.searchParams.set("access_type", "offline");
-      authUrl.searchParams.set("prompt", "consent"); // ensure refresh token on re-consent
+      authUrl.searchParams.set("prompt", "consent");
 
       popupRef.current = openPopup(authUrl.toString());
       if (!popupRef.current) throw new Error("Popup blocked");
 
       const redirectOrigin = new URL(REDIRECT_URI).origin;
+
       const { code, state: returnedState } = await waitForCode(redirectOrigin);
       console.log(code, state);
 
@@ -141,12 +142,13 @@ export function useLogin() {
         const t = await cbRes.text().catch(() => "");
         throw new Error(`Callback failed: ${cbRes.status} ${t}`);
       }
-
+      console.log(tokens);
       const tokens = await cbRes.json();
 
       await acceptLoginTokens(tokens);
 
       const me = await getMe();
+
       setAuthUser(me);
 
       return me;
