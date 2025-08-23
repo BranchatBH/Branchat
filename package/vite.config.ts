@@ -20,12 +20,8 @@ export default defineConfig({
     tailwindcss(),
   ],
   build: {
-    rollupOptions: {
-      input: {
-        sidepanel: path.resolve(__dirname, 'src/sidepanel/main.html'),
-      },
-    },
     outDir: 'dist',
+    sourcemap: false,
   },
   server: {
     cors: {

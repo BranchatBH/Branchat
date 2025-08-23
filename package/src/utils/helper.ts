@@ -1,34 +1,24 @@
-export function findByTags<T extends HTMLElement>(root : Document | HTMLElement = document, tags : string[]) : T | null {
-    for (const tag of tags){
-        const elem = root.querySelector(tag) as T | null;
-        if(elem) return elem;
-    }
+export function findByTags<T extends HTMLElement>(root: Document | HTMLElement = document, tags: string[]): T | null {
+    // ["p", "div", "span"] -> "p,div,span"
+    const selector = tags.join(','); 
+    return root.querySelector(selector) as T | null;
+  }
 
-    return null;
-}
+  export function findAllByTag<T extends HTMLElement>(root: Document | HTMLElement = document, tag: string): NodeListOf<T> {
+    // querySelectorAll은 null을 반환하지 않으므로, null 체크가 불필요합니다.
+    return root.querySelectorAll(tag) as NodeListOf<T>;
+  }
 
-export function findAllByTag<T extends HTMLElement>(root : Document | HTMLElement = document, tag : string) : NodeListOf<T> | null {
-    const el = root.querySelectorAll(tag);
-    if(el.length !== 0){
-        return el as NodeListOf<T>;
-    }
-    return null;
-}
-
-export const debounced = <T extends (...args : any[]) => any>(fn : T, ms = 80) => {
-
-    let t : ReturnType<typeof setTimeout>;
-
-    return (...args : Parameters<T>) : Promise<ReturnType<T>> => {
-        clearTimeout(t);
-        
-        return new Promise((resolve) => {
-            t = setTimeout(() => {
-                const result = fn(...args);
-                resolve(result);
-            }, ms)
-        })
-    }
-
-};
+  export const debounced = <T extends (...args: any[]) => void>(fn: T, ms = 80) => {
+    let timer: ReturnType<typeof setTimeout>;
+  
+    // 'this' 컨텍스트와 인자를 제대로 전달하기 위해 일반 함수를 사용합니다.
+    return function(this: ThisParameterType<T>, ...args: Parameters<T>) {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        // fn.apply를 사용해 원래 함수의 'this'를 유지합니다.
+        fn.apply(this, args);
+      }, ms);
+    };
+  };
 

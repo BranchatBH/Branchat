@@ -1,4 +1,4 @@
-export const API_ORIGIN = "https://api.branchat.p-e.kr/api/v1"; 
+export const API_ORIGIN = "http://localhost:8080/api/v1"; 
 const RT_KEY = "refreshToken";
 const SKEW_SEC = 60;
 

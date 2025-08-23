@@ -3,9 +3,9 @@ import { useAuthContext, type AuthUser } from "../context/AuthContext";
 import { API_ORIGIN, acceptLoginTokens } from "../utils/auth";
 
 // ======= CONFIG: fill these in =======
-const GOOGLE_CLIENT_ID = "139435746696-ipu6o7pouh8238htm0ug9luh7h1gisjv.apps.googleusercontent.com";
-const GOOGLE_CLIENT_PASSWORD = "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"
-const REDIRECT_URI = "https://branchat.netlify.app/auth/callback"; // your bridge/callback page
+const GOOGLE_CLIENT_ID = "663400441243-3m0le0q4oocro9lkldeq5h3d24f5ut0t.apps.googleusercontent.com";
+//const GOOGLE_CLIENT_PASSWORD = "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"
+const REDIRECT_URI = "http://localhost:3000/auth/google/callback"; // your bridge/callback page
 const SCOPES = ["openid", "email", "profile"];          // adjust if needed
 const AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
 // =====================================
@@ -131,11 +131,12 @@ export function useLogin() {
       }
 
       const cbUrl = new URL(`${API_ORIGIN}/auth/login/google`);
-      cbUrl.searchParams.set("code", code);
-      cbUrl.searchParams.set("state", state);
-      cbUrl.searchParams.set("code_verifier", codeVerifier); 
+      //cbUrl.searchParams.set("code", code);
+      //cbUrl.searchParams.set("state", state);
+      //cbUrl.searchParams.set("code_verifier", codeVerifier); 
+      cbUrl.searchParams.set("redirect_uri", REDIRECT_URI); 
 
-      const cbRes = await fetch(cbUrl.toString(), { method: "GET", credentials: "omit" });
+      const cbRes = await fetch(cbUrl.toString(), { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "omit", body: JSON.stringify({ code: code, code_verifier: codeVerifier }) });
       if (!cbRes.ok) {
         const t = await cbRes.text().catch(() => "");
         throw new Error(`Callback failed: ${cbRes.status} ${t}`);
