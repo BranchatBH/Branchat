@@ -1,5 +1,4 @@
 type TabId = number;
-const CONTENT_FILE = "src/content/content.tsx.js"; // built file path
 let currentTabId: TabId | null = null;
 
 // Track tab activation
@@ -47,9 +46,9 @@ function pingSidePanel(timeoutMs = 3000): Promise<boolean> {
   });
 }
 
-async function ensureSidePanel(tabId: number) {
-  for (let i = 0; i < 20; i++) {
-    if (await pingSidePanel()) return;
+async function ensureSidePanel() {
+  for (let i = 0; i < 10; i++) {
+    if (await pingSidePanel(500)) return;
     await delay(200);
   }
   console.log('timeout');
@@ -59,8 +58,8 @@ async function ensureSidePanel(tabId: number) {
 async function ensureContentScript(tabId: number) {
   if (await pingContent(tabId)) return;
 
-  for (let i = 0; i < 6; i++) {
-    if (await pingContent(tabId)) return;
+  for (let i = 0; i < 10; i++) {
+    if (await pingContent(tabId, 500)) return;
     await delay(200);
   }
   console.log("timeout")
@@ -73,7 +72,7 @@ async function waitForComplete(tabId: number) {
     if (t.status === "complete") return;
   } catch { return; }
   await new Promise<void>((resolve) => {
-    const listener = (id: number, info: chrome.tabs.OnUpdatedInfo, tab: chrome.tabs.Tab) => {
+    const listener = (id: number, info: chrome.tabs.OnUpdatedInfo, _tab: chrome.tabs.Tab) => {
       if (id === tabId && info.status === "complete") {
         chrome.tabs.onUpdated.removeListener(listener);
         resolve();
@@ -119,14 +118,14 @@ chrome.webNavigation.onCommitted.addListener(async ({ tabId, url, frameId }) => 
 }, { url: [{ hostSuffix: "chatgpt.com" }] });
 
 // Example: public API your UI can call
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg,_sender,sendResponse) => {
   if (msg?.type === 'SELECTION') {
     (async () => {
       const tabId = currentTabId;
       if (!tabId) { console.log('no tabId'); sendResponse({ ok: false }); return; }
 
       try {
-        await ensureSidePanel(tabId); // uses runtime.sendMessage now
+        await ensureSidePanel(); // uses runtime.sendMessage now
         await chrome.runtime.sendMessage({
           type: 'SELECTION_RELAY',
           text: msg.text,
