@@ -67,7 +67,9 @@ export const AuthContextProvider: React.FC<Props> = ({ children }) => {
 
   const getMe = useCallback(async (): Promise<AuthUser> => {
     try {
-      const r = await apiFetch("/auth/users");
+      const r = await apiFetch("/auth/users" ,{headers:{
+        "Content-Type":"application/json"
+      }});
       return r.ok ? ((await r.json()) as AuthUser) : null;
     } catch {
       return null;
