@@ -2,6 +2,7 @@ import ReactDOM from "react-dom/client";
 import React from 'react';
 import SidePanel from "./sidepanel";
 import { AuthContextProvider } from "@/context/AuthContext";
+import { URLContextProvider } from "@/context/URLContext";
 
 
 function mount() {
@@ -11,8 +12,10 @@ function mount() {
   (window as any).__sidePanelRoot__ = ReactDOM.createRoot(el);
   (window as any).__sidePanelRoot__.render(
     <React.StrictMode>
-      <AuthContextProvider> 
-        <SidePanel /> 
+      <AuthContextProvider>
+        <URLContextProvider>
+          <SidePanel /> 
+        </URLContextProvider>
       </AuthContextProvider>
     </React.StrictMode>
   );

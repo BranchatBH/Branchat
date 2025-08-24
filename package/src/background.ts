@@ -1,14 +1,18 @@
+import { broadcastUrl } from "./background/broadcastUrl";
+
 type TabId = number;
 let currentTabId: TabId | null = null;
 
 // Track tab activation
-chrome.tabs.onActivated.addListener(({ tabId }) => {
+chrome.tabs.onActivated.addListener(async ({ tabId }) => {
   currentTabId = tabId;
+  await broadcastUrl(tabId)
 });
 
 chrome.windows.onFocusChanged.addListener(async () => {
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
   currentTabId = tab?.id ?? null;
+  if(tab?.id) await broadcastUrl(tab?.id);
 });
 
 chrome.sidePanel.setPanelBehavior({openPanelOnActionClick : true})
@@ -96,6 +100,7 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(({ tabId, url }) => {
       await ensureContentScript(tabId);
       console.log("post_navigate");
       chrome.tabs.sendMessage(tabId, { type: "POST_NAVIGATE" });
+      await broadcastUrl(tabId, url);
     } catch (e) {
       console.log(e);
     }
@@ -113,6 +118,7 @@ chrome.webNavigation.onCommitted.addListener(async ({ tabId, url, frameId }) => 
       await ensureContentScript(tabId);
       console.log("post_navigate");
       chrome.tabs.sendMessage(tabId, { type: "POST_NAVIGATE" });
+      await broadcastUrl(tabId, url);
     } catch(e) {console.log(e);}
   }, 150);
 }, { url: [{ hostSuffix: "chatgpt.com" }] });

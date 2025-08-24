@@ -5,6 +5,7 @@ import "@/global.css"; // <-- Tailwind entry (see #3)
 import LoginButton from "@/components/loginButton";
 import { useAuthContext } from "@/context/AuthContext";
 import LogoutButton from "@/components/logoutButton";
+import { useURLContext } from "@/context/URLContext";
 
 function PortalBottom({ children }: { children: React.ReactNode }) {
   const [host] = React.useState(() => document.createElement("div"));
@@ -21,6 +22,7 @@ function SidePanel() {
   const [activeTabId, setActiveTabId] = useState<number | null>(null);
   const [text, setText] = useState<string>('');
   const {authUser, loading:userLoading ,error} = useAuthContext();
+  const {url, isChat, provider} = useURLContext();
 
   useEffect(() => {
     let disposed = false;
@@ -88,7 +90,10 @@ function SidePanel() {
         <div>
           {authUser ? <LogoutButton/> : <></>}
         </div>
-        <div className="h-[60vh]" />
+        <div className="h-[60vh]">
+          <div>{url ?? ""}</div>
+          <div>{provider}</div>
+        </div>
       </div>
 
       {/* bottom composer – portaled to <body> so parent transforms/overflow can’t trap it */}
