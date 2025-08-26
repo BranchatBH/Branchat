@@ -16,5 +16,4 @@ export class DomProvider {
     form(){return findByTags<HTMLFormElement>(this.root, this.s.formQ);}
     editor(){return findByTags<HTMLDivElement>(this.root, this.s.editorQ);}
     branchButtons(){return findAllByTag<HTMLButtonElement>(this.root, this.s.branchButtonQ[0]);}
-
 };

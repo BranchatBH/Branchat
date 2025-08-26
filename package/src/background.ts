@@ -86,8 +86,6 @@ async function waitForComplete(tabId: number) {
   });
 }
 
-// ---- NAV LISTENERS ----
-// 1) SPA route changes (most important)
 chrome.webNavigation.onHistoryStateUpdated.addListener(({ tabId, url }) => {
   // Filter to your domains
   if (!/https?:\/\/(www\.)?chatgpt\.com/.test(url)) {
@@ -181,7 +179,7 @@ chrome.runtime.onMessage.addListener((msg,_sender,sendResponse) => {
         sendResponse({ success: false, error: String(e) });
       }
     })();
-    return true; // keep channel open
+    return true; 
   }
 });
 

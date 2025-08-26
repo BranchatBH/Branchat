@@ -19,7 +19,7 @@ export const SELECTORS = {
             ".composer-submit-btn"
         ],
 
-        askBubbleQ: ['div.aria-live\\=polite.absolute.select-none']
+        askBubbleQ: ['div.aria-live\\=polite.absolute.select-none'],
 
     },
 
@@ -33,7 +33,7 @@ export const SELECTORS = {
 
         submitButtonQ: ["..."],
 
-        askBubbleQ : ["..."]
+        askBubbleQ : ["..."],
 
     },
 
@@ -47,7 +47,7 @@ export const SELECTORS = {
 
         submitButtonQ: ["..."],
 
-        askBubbleQ : ["..."]
+        askBubbleQ : ["..."],
 
     },
 

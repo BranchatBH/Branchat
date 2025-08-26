@@ -1,0 +1,10 @@
+export type TabId = number;
+
+
+export type NavIntent = {
+  reason: "SIDE_PANEL_ADD_CHAT";
+  // unique code to tag this flow (optional but safer)
+  nonce: string;
+  // safety window (ms) to avoid stale notes
+  deadline: number;
+};

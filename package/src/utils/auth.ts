@@ -52,9 +52,9 @@ async function callRefreshEndpoint(rt: string): Promise<TokenBundle> {
     body: JSON.stringify({ refreshToken: rt }),
   });
   if (!r.ok) throw new Error(`Refresh failed: ${r.status}`);
-  return (await r.json()) as TokenBundle;
+  const res = await r.json().catch(console.log);
+  return res.data as TokenBundle;
 }
-
 export async function ensureAccessToken(): Promise<string> {
   if (!needsRefresh()) {
     console.log("accessToken ensured:", accessToken);

@@ -4,6 +4,7 @@ import { Render } from "../app";
 import { detectProviderFromLocation } from "@/utils/detect";
 import type { Provider } from "@/types/types";
 import { fillAndSubmit } from "@/content/dom/fillAndSubmit";
+import { DomProvider } from "../providers/DomProvider";
 
 export const handlers = {
   PING(_msg: InboundMsg, _send: (v:any)=>void) {
