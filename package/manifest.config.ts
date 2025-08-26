@@ -21,7 +21,7 @@ export default defineManifest({
     matches: ['<all_urls>'],
   }],
   background: {
-    service_worker: "src/background.ts"
+    service_worker: "src/background/background.ts"
  },
   side_panel:{
     default_path:"src/sidepanel/main.html"
