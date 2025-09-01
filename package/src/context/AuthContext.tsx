@@ -46,7 +46,10 @@ export const AuthContextProvider: React.FC<Props> = ({ children }) => {
     try {
       const at = await ensureAccessToken();
       console.log("at", at);
-      if (at) headers.set("Authorization", `Bearer ${at}`);
+      if (at){
+        headers.set("Authorization", `Bearer ${at}`);
+        headers.set("Content-Type", "application/json");
+      }
     } catch {
     }
 
@@ -73,7 +76,7 @@ export const AuthContextProvider: React.FC<Props> = ({ children }) => {
         method:"GET", 
         headers:{ "Content-Type":"application/json" }
       });
-      return r.ok ? ((await r.json()) as AuthUser) : null;
+      return r.ok ? ((await r.json()).data as AuthUser) : null;
     } catch(error) {
       console.log(error);
       return null;

@@ -1,4 +1,4 @@
-import { broadcastUrl } from "./background/broadcastUrl";
+import { broadcastUrl } from "./background/services/broadcastUrl";
 
 type TabId = number;
 let currentTabId: TabId | null = null;

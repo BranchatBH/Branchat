@@ -8,11 +8,13 @@ import React, {
   ReactNode,
   useMemo,
 } from "react";
+import { useAuthContext } from "./AuthContext";
 
 type URLContextValue = {
     url: string | null,
     provider : Provider | null,
-    isChat : boolean
+    isChat : boolean,
+    chatId: string | null,
 }
 
 const URLContext = createContext<URLContextValue | undefined>(undefined);
@@ -30,7 +32,8 @@ export const URLContextProvider : React.FC<Props> = ({children}:Props) => {
     const [url, setUrl] = useState<string|null>(null);
     const [isChat, setIsChat] = useState<boolean>(false);
     const [provider, setProvider] = useState<Provider|null>(null);
-
+    const [chatId, setChatId] = useState<string|null>(null);
+    const {apiFetch} = useAuthContext();
     useEffect(() => {
         const getMyTabId = async () : Promise<number> => {
             const [tab] = await chrome.tabs.query({ active : true, currentWindow : true});
@@ -68,7 +71,16 @@ export const URLContextProvider : React.FC<Props> = ({children}:Props) => {
         return () => {}; // needs a cleanup logic 
     },[tabId]);
 
-    const value = useMemo(() => ({url, isChat, provider}), [tabId, url]);
+    useEffect(() => {
+        if(!url) return;
+        const getChatId = async () => {
+            const res = await apiFetch(`/nodes/${url}`);
+            return res.ok ? ((await res.json()).data as string) : null;
+        };
+        getChatId().then((r)=>setChatId(r)).catch(console.log);
+    },[url])
+
+    const value = useMemo(() => ({url, isChat, provider, chatId}), [tabId, url]);
 
 
 

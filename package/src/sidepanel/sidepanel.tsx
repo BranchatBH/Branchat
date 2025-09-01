@@ -22,7 +22,7 @@ function SidePanel() {
   const [activeTabId, setActiveTabId] = useState<number | null>(null);
   const [text, setText] = useState<string>('');
   const {authUser, loading:userLoading ,error} = useAuthContext();
-  const {url, isChat, provider} = useURLContext();
+  const {url, isChat, provider, chatId : parentId} = useURLContext();
 
   useEffect(() => {
     let disposed = false;
@@ -60,7 +60,7 @@ function SidePanel() {
     setLoading(true);
     const concat = text + prompt; 
     console.log(concat);
-    chrome.runtime.sendMessage({type : "NAVIGATE", prompt:concat, url})
+    chrome.runtime.sendMessage({type : "NAVIGATE", prompt:concat, url, parentId})
        .then(() => setLoading(false))
         .catch((err) => {
          console.error("Navigation failed:", err);

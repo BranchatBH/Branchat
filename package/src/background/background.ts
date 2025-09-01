@@ -1,8 +1,8 @@
 import { detectInChat, detectProviderFromURL } from "@/utils/detect";
-import { broadcastUrl } from "./broadcastUrl";
+import { broadcastUrl } from "./services/broadcastUrl";
 import type { TabId } from "./type/types";
-import { debounce } from "./utils/debounce";
-import { ensureContentScript, ensureSidePanel, waitForComplete } from "./utils/ping";
+import { debounce } from "./services/debounce";
+import { ensureContentScript, ensureSidePanel, waitForComplete } from "./services/ping";
 import {setNavIntent, consumeIntent, afterNavigateBranch} from "./intent/intent";
 
 let currentTabId: TabId | null = null;
@@ -38,7 +38,7 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(({ tabId, url }) => {
         const intent = consumeIntent(tabId); // single-use
         if (intent) {
           // This conversation page came from our sidepanel submit
-          await afterNavigateBranch(tabId, url);
+          await afterNavigateBranch(tabId, url, intent.parentId);
         }
       }
     } catch (e) {
@@ -62,7 +62,7 @@ chrome.webNavigation.onCommitted.addListener(({ tabId, url, frameId }) => {
       if (detectInChat(url)) {
         const intent = consumeIntent(tabId);
         if (intent) {
-          await afterNavigateBranch(tabId, url);
+          await afterNavigateBranch(tabId, url, intent.parentId);
         }
       }
     } catch (e) {
@@ -115,7 +115,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       const tabId = currentTabId;
       if (!tabId) return sendResponse({ success: false, error: "No active tab" });
       try {
-        setNavIntent(tabId);
+        setNavIntent(tabId, msg.parentId ?? '');
 
         await chrome.tabs.update(tabId, { url: msg.url });
 
